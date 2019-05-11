@@ -718,6 +718,10 @@ struct sta_info * ap_sta_add(struct hostapd_data *hapd, const u8 *addr)
 				      &sta->probe_ie_taxonomy);
 #endif /* CONFIG_TAXONOMY */
 
+#ifdef CONFIG_RSSI_CONTROL
+    sta->sig_drop_strikes = 0;
+#endif /* CONFIG_RSSI_CONTROL */
+
 	return sta;
 }
 

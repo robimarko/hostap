@@ -6330,6 +6330,7 @@ static int get_sta_handler(struct nl_msg *msg, void *arg)
 		[NL80211_STA_INFO_RX_BYTES64] = { .type = NLA_U64 },
 		[NL80211_STA_INFO_TX_BYTES64] = { .type = NLA_U64 },
 		[NL80211_STA_INFO_SIGNAL] = { .type = NLA_U8 },
+		[NL80211_STA_INFO_SIGNAL_AVG] = { .type = NLA_U8 },
 		[NL80211_STA_INFO_ACK_SIGNAL] = { .type = NLA_U8 },
 		[NL80211_STA_INFO_RX_DURATION] = { .type = NLA_U64 },
 		[NL80211_STA_INFO_TX_DURATION] = { .type = NLA_U64 },
@@ -6401,6 +6402,9 @@ static int get_sta_handler(struct nl_msg *msg, void *arg)
 			nla_get_u32(stats[NL80211_STA_INFO_TX_FAILED]);
 	if (stats[NL80211_STA_INFO_SIGNAL])
 		data->signal = nla_get_u8(stats[NL80211_STA_INFO_SIGNAL]);
+	if (stats[NL80211_STA_INFO_SIGNAL_AVG])
+		data->last_ack_rssi =
+			(int) (s8) nla_get_u8(stats[NL80211_STA_INFO_SIGNAL_AVG]);
 	if (stats[NL80211_STA_INFO_ACK_SIGNAL]) {
 		data->last_ack_rssi =
 			nla_get_u8(stats[NL80211_STA_INFO_ACK_SIGNAL]);

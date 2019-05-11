@@ -255,6 +255,10 @@ struct sta_info {
 	struct wpabuf *fils_g_sta;
 #endif /* CONFIG_FILS */
 
+#ifdef CONFIG_RSSI_CONTROL
+	int sig_drop_strikes;  /* Number of times signal was below threshold. */
+#endif /* CONFIG_RSSI_CONTROL */
+
 #ifdef CONFIG_OWE
 	u8 *owe_pmk;
 	size_t owe_pmk_len;

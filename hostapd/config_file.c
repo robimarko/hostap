@@ -3282,6 +3282,26 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 			return 1;
 		}
 		bss->send_probe_response = val;
+	#ifdef CONFIG_RSSI_CONTROL		
+		} else if (os_strcmp(buf, "signal_connect") == 0) {
+			bss->signal_auth_min = atoi(pos);
+		} else if (os_strcmp(buf, "signal_stay") == 0) {
+			bss->signal_stay_min = atoi(pos);
+		} else if (os_strcmp(buf, "signal_poll_time") == 0) {
+			bss->signal_poll_time = atoi(pos);
+			if (bss->signal_poll_time < 2) {
+				wpa_printf(MSG_ERROR, "Line %d: invalid signal poll time", line);
+				return 1;
+			}
+		} else if (os_strcmp(buf, "signal_strikes") == 0) {
+			bss->signal_strikes = atoi(pos);
+		} else if (os_strcmp(buf, "signal_drop_reason") == 0) {
+			bss->signal_drop_reason = atoi(pos);
+			if (bss->signal_drop_reason < 1 || bss->signal_drop_reason > 54) {
+				wpa_printf(MSG_ERROR, "Line %d: invalid signal drop reason", line);
+				return 1;
+			}
+	#endif /* CONFIG_RSSI_CONTROL */
 	} else if (os_strcmp(buf, "supported_rates") == 0) {
 		if (hostapd_parse_intlist(&conf->supported_rates, pos)) {
 			wpa_printf(MSG_ERROR, "Line %d: invalid rate list",
