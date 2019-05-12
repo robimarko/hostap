@@ -73,3 +73,9 @@ static void hostapd_bss_signal_check(void *eloop_data, void *user_ctx)
 
 	eloop_register_timeout(hapd->conf->signal_poll_time, 0, hostapd_bss_signal_check, eloop_data, hapd);
 }
+
+int airtime_policy_update_init(struct hostapd_iface *iface)
+{
+	eloop_register_timeout(hapd->conf->signal_poll_time, 0, hostapd_bss_signal_check, eloop_data, hapd);
+	return 0;
+}

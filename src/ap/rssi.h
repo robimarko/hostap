@@ -12,12 +12,18 @@
 #ifdef CONFIG_RSSI_CONTROL
 
 static void hostapd_bss_signal_check(void *eloop_data, void *user_ctx);
+int hostapd_bss_signal_policy_init(struct hostapd_iface *iface);
 
 #else /* CONFIG_RSSI_CONTROL */
 
 static inline void hostapd_bss_signal_check(void *eloop_data, void *user_ctx)
 {
 
+}
+
+static inline int hostapd_bss_signal_policy_init(struct hostapd_iface *iface)
+{
+	return -1;
 }
 
 #endif /* CONFIG_RSSI_CONTROL */
