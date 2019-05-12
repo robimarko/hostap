@@ -3001,8 +3001,6 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 #endif /* CONFIG_P2P */
 
 	airtime_policy_new_sta(hapd, sta);
-	eloop_cancel_timeout(hostapd_bss_signal_check, ELOOP_ALL_CTX, ELOOP_ALL_CTX);
-	eloop_register_timeout(3, 0, hostapd_bss_signal_check, NULL, hapd);  // Start up the poll timer.
 
 	/* Start accounting here, if IEEE 802.1X and WPA are not used.
 	 * IEEE 802.1X/WPA code will start accounting after the station has
