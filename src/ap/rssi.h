@@ -11,7 +11,7 @@
 
 #ifdef CONFIG_RSSI_CONTROL
 
-void hostapd_bss_signal_check(void *eloop_data, void *user_ctx);
+static void hostapd_bss_signal_check(void *eloop_data, void *user_ctx);
 
 #else /* CONFIG_RSSI_CONTROL */
 
