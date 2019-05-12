@@ -250,6 +250,7 @@ endif
 
 ifdef CONFIG_RSSI_CONTROL
 CFLAGS += -DCONFIG_RSSI_CONTROL
+OBJS += ../src/ap/rssi.o
 endif
 
 ifdef CONFIG_IAPP

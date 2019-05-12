@@ -15,7 +15,6 @@
 #include "neighbor_db.h"
 #include "wps_hostapd.h"
 #include "sta_info.h"
-#include "ubus.h"
 #include "ap_drv_ops.h"
 #include "beacon.h"
 #include "rrm.h"

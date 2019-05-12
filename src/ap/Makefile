@@ -21,6 +21,7 @@ CFLAGS += -DCONFIG_PROXYARP
 CFLAGS += -DCONFIG_IPV6
 CFLAGS += -DCONFIG_IAPP
 CFLAGS += -DCONFIG_AIRTIME_POLICY
+CFLAGS += -DCONFIG_RSSI_CONTROL
 
 LIB_OBJS= \
 	accounting.o \
@@ -55,6 +56,7 @@ LIB_OBJS= \
 	pmksa_cache_auth.o \
 	preauth_auth.o \
 	rrm.o \
+	rssi.o \
 	sta_info.o \
 	tkip_countermeasures.o \
 	utils.o \
