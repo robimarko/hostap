@@ -20,6 +20,7 @@
 #include "rrm.h"
 #include "wnm_ap.h"
 #include "taxonomy.h"
+#include "rssi.h"
 
 static void hostapd_bss_signal_check(void *eloop_data, void *user_ctx)
 /* This is called by an eloop timeout.  All stations in the list are checked

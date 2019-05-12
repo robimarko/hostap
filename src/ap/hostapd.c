@@ -51,6 +51,7 @@
 #include "acs.h"
 #include "hs20.h"
 #include "airtime_policy.h"
+#include "rssi.h"
 
 
 static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
