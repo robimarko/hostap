@@ -332,6 +332,11 @@ CFLAGS += -DCONFIG_AIRTIME_POLICY
 OBJS += ../src/ap/airtime_policy.o
 endif
 
+ifdef CONFIG_BAND_STEERING
+CFLAGS += -DCONFIG_BAND_STEERING
+OBJS += ../src/ap/steering.o
+endif
+
 ifdef CONFIG_FILS
 CFLAGS += -DCONFIG_FILS
 OBJS += ../src/ap/fils_hlp.o

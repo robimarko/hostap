@@ -39,6 +39,9 @@
 #include "sta_info.h"
 #include "vlan.h"
 #include "wps_hostapd.h"
+#ifdef CONFIG_BAND_STEERING
+#include "ap/steering.h"
+#endif /* CONFIG_BAND_STEERING */
 
 static void ap_sta_remove_in_other_bss(struct hostapd_data *hapd,
 				       struct sta_info *sta);
@@ -1257,6 +1260,10 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 		}
 #endif /* CONFIG_P2P */
 
+#ifdef CONFIG_BAND_STEERING
+		write_connect_timestamp(hapd, sta->addr);
+#endif /* CONFIG_BAND_STEERING */
+
 		keyid = ap_sta_wpa_get_keyid(hapd, sta);
 		if (keyid) {
 			os_snprintf(keyid_buf, sizeof(keyid_buf),
@@ -1279,6 +1286,10 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_msg_no_global(hapd->msg_ctx_parent, MSG_INFO,
 					  AP_STA_DISCONNECTED "%s", buf);
 	}
+	
+#ifdef CONFIG_BAND_STEERING
+		write_disconnect_timestamp(hapd, sta->addr);
+#endif /* CONFIG_BAND_STEERING */
 
 #ifdef CONFIG_FST
 	if (hapd->iface->fst) {

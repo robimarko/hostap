@@ -52,6 +52,9 @@
 #include "fils_hlp.h"
 #include "dpp_hostapd.h"
 #include "gas_query_ap.h"
+#ifdef CONFIG_BAND_STEERING
+#include "ap/steering.h"
+#endif /* CONFIG_BAND_STEERING */
 
 
 #ifdef CONFIG_FILS
@@ -3695,7 +3698,7 @@ void fils_hlp_timeout(void *eloop_ctx, void *eloop_data)
 
 static void handle_assoc(struct hostapd_data *hapd,
 			 const struct ieee80211_mgmt *mgmt, size_t len,
-			 int reassoc, int rssi)
+			 int reassoc, int rssi, int ssi_signal)
 {
 	u16 capab_info, listen_interval, seq_ctrl, fc;
 	u16 resp = WLAN_STATUS_SUCCESS, reply_res;
@@ -3709,6 +3712,13 @@ static void handle_assoc(struct hostapd_data *hapd,
 #ifdef CONFIG_FILS
 	int delay_assoc = 0;
 #endif /* CONFIG_FILS */
+#ifdef CONFIG_BAND_STEERING
+	steering_reason s_reason = NOSTEER_REASON_UNSPECIFIED;
+	struct os_reltime probe_delta_time, steer_delta_time, defer_delta_time;
+	os_memset(&probe_delta_time, 0, sizeof(probe_delta_time));
+	os_memset(&steer_delta_time, 0, sizeof(steer_delta_time));
+	os_memset(&defer_delta_time, 0, sizeof(defer_delta_time));
+#endif /* CONFIG_BAND_STEERING */
 
 	if (len < IEEE80211_HDRLEN + (reassoc ? sizeof(mgmt->u.reassoc_req) :
 				      sizeof(mgmt->u.assoc_req))) {
@@ -3926,6 +3936,16 @@ static void handle_assoc(struct hostapd_data *hapd,
 	if (resp != WLAN_STATUS_SUCCESS)
 		goto fail;
 
+#ifdef CONFIG_BAND_STEERING
+	if (should_steer_on_assoc(hapd, mgmt->sa, ssi_signal,
+					 reassoc, &s_reason, &probe_delta_time,
+					 &steer_delta_time, &defer_delta_time)) {
+		resp = WLAN_STATUS_ASSOC_REJECTED_TEMPORARILY;
+		//sta->disassoc_reason = REASON_ASSOC_REJECT_STEER;
+		goto fail;
+	}
+#endif /* CONFIG_BAND_STEERING */
+
 	if (hostapd_get_aid(hapd, sta) < 0) {
 		hostapd_logger(hapd, mgmt->sa, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_INFO, "No room for more AIDs");
@@ -4102,7 +4122,8 @@ static void handle_assoc(struct hostapd_data *hapd,
 
 
 static void handle_disassoc(struct hostapd_data *hapd,
-			    const struct ieee80211_mgmt *mgmt, size_t len)
+			    const struct ieee80211_mgmt *mgmt, size_t len,
+			    int ssi_signal)
 {
 	struct sta_info *sta;
 
@@ -4166,7 +4187,8 @@ static void handle_disassoc(struct hostapd_data *hapd,
 
 
 static void handle_deauth(struct hostapd_data *hapd,
-			  const struct ieee80211_mgmt *mgmt, size_t len)
+			  const struct ieee80211_mgmt *mgmt, size_t len,
+			  int ssi_signal)
 {
 	struct sta_info *sta;
 
@@ -4511,22 +4533,22 @@ int ieee802_11_mgmt(struct hostapd_data *hapd, const u8 *buf, size_t len,
 		break;
 	case WLAN_FC_STYPE_ASSOC_REQ:
 		wpa_printf(MSG_DEBUG, "mgmt::assoc_req");
-		handle_assoc(hapd, mgmt, len, 0, ssi_signal);
+		handle_assoc(hapd, mgmt, len, 0, ssi_signal, fi->ssi_signal);
 		ret = 1;
 		break;
 	case WLAN_FC_STYPE_REASSOC_REQ:
 		wpa_printf(MSG_DEBUG, "mgmt::reassoc_req");
-		handle_assoc(hapd, mgmt, len, 1, ssi_signal);
+		handle_assoc(hapd, mgmt, len, 1, ssi_signal, fi->ssi_signal);
 		ret = 1;
 		break;
 	case WLAN_FC_STYPE_DISASSOC:
 		wpa_printf(MSG_DEBUG, "mgmt::disassoc");
-		handle_disassoc(hapd, mgmt, len);
+		handle_disassoc(hapd, mgmt, len, fi->ssi_signal);
 		ret = 1;
 		break;
 	case WLAN_FC_STYPE_DEAUTH:
 		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "mgmt::deauth");
-		handle_deauth(hapd, mgmt, len);
+		handle_deauth(hapd, mgmt, len, fi->ssi_signal);
 		ret = 1;
 		break;
 	case WLAN_FC_STYPE_ACTION:

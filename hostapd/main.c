@@ -30,6 +30,9 @@
 #include "config_file.h"
 #include "eap_register.h"
 #include "ctrl_iface.h"
+#ifdef CONFIG_BAND_STEERING
+#include "ap/steering.h"
+#endif /* CONFIG_BAND_STEERING */
 
 
 struct hapd_global {
@@ -39,6 +42,11 @@ struct hapd_global {
 
 static struct hapd_global global;
 
+#ifdef CONFIG_BAND_STEERING
+	char *steering_path = NULL;
+	int steering_rsi_threshold = -60;
+	char *steering_target_interface = NULL;
+#endif /* CONFIG_BAND_STEERING */
 
 #ifndef CONFIG_NO_HOSTAPD_LOGGER
 static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
@@ -289,6 +297,12 @@ hostapd_interface_init(struct hapd_interfaces *interfaces, const char *if_name,
 		return NULL;
 	}
 
+#ifdef CONFIG_BAND_STEERING
+	if (bandsteer_interface_init(iface)) {
+		return NULL;
+	}
+#endif /* CONFIG_BAND_STEERING */
+
 	return iface;
 }
 
@@ -353,6 +367,13 @@ static int hostapd_global_init(struct hapd_interfaces *interfaces,
 		return -1;
 	}
 	interfaces->eloop_initialized = 1;
+
+#ifdef CONFIG_BAND_STEERING
+	if (bandsteer_init()) {
+		wpa_printf(MSG_ERROR, "Failed to initialize band steering");
+		return -1;
+	}
+#endif /* CONFIG_BAND_STEERING */
 
 	random_init(entropy_file);
 
@@ -495,6 +516,11 @@ static void usage(void)
 #endif /* CONFIG_DEBUG_SYSLOG */
 		"   -S   start all the interfaces synchronously\n"
 		"   -t   include timestamps in some debug messages\n"
+#ifdef CONFIG_BAND_STEERING
+		"   -l   log band steering timestamps in this directory\n"
+		"   -r   steering rsi threshold (dbm), dflt=-60\n"
+		"   -n   steering target interface name\n"
+#endif /* CONFIG_BAND_STEERING */
 		"   -v   show hostapd version\n");
 
 	exit(1);
@@ -683,7 +709,7 @@ int main(int argc, char *argv[])
 #endif /* CONFIG_DPP */
 
 	for (;;) {
-		c = getopt(argc, argv, "b:Bde:f:hi:KP:sSTtu:vg:G:");
+		c = getopt(argc, argv, "b:Bde:f:hi:KP:sSTtu:vg:G:n:l:r");
 		if (c < 0)
 			break;
 		switch (c) {
@@ -757,6 +783,22 @@ int main(int argc, char *argv[])
 							&if_names_size, optarg))
 				goto out;
 			break;
+#ifdef CONFIG_BAND_STEERING
+		case 'l':
+			steering_path = optarg;
+			break;
+		case 'n':
+			steering_target_interface = optarg;
+			break;
+		case 'r':
+			for (i = 0; optarg[i] && isdigit(optarg[i]); i++);
+			if (optarg[i] == '\0') {
+				steering_rsi_threshold = -atoi(optarg);
+								wpa_printf(MSG_INFO, "steering_rsi_threshold = %d",
+											steering_rsi_threshold);
+			}
+			break;
+#endif /* CONFIG_BAND_STEERING */
 		default:
 			usage();
 			break;

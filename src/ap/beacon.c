@@ -32,6 +32,9 @@
 #include "dfs.h"
 #include "taxonomy.h"
 #include "ieee802_11_auth.h"
+#ifdef CONFIG_BAND_STEERING
+#include "ap/steering.h"
+#endif /* CONFIG_BAND_STEERING */
 
 
 #ifdef NEED_AP_MLME
@@ -746,6 +749,10 @@ void handle_probe_req(struct hostapd_data *hapd,
 	struct hostapd_sta_wpa_psk_short *psk = NULL;
 	char *identity = NULL;
 	char *radius_cui = NULL;
+
+#ifdef CONFIG_BAND_STEERING
+	write_probe_timestamp(hapd, mgmt->sa, ssi_signal);
+#endif /* CONFIG_BAND_STEERING */
 
 	if (len < IEEE80211_HDRLEN)
 		return;
